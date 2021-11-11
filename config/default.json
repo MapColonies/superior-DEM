@@ -5,17 +5,14 @@
       "prettyPrint": false
     }
   },
+  "wcs" : {
+    "url": "http://localhost:8080/geoserver/wcs"
+  },
   "server": {
     "port": "8080",
     "request": {
       "payload": {
         "limit": "1mb"
-      }
-    },
-    "response": {
-      "compression": {
-        "enabled": true,
-        "options": null
       }
     }
   }
