@@ -4,6 +4,8 @@ import Axios, { AxiosError } from 'axios';
 import qs from 'qs';
 import { SERVICES } from '../../common/constants';
 import { IConfig } from '../../common/interfaces';
+import { UpstreamUnavailableError } from '../../common/errors';
+import { CATALOG_SYMBOL, ICatalog } from '../../catalog/catalog';
 import { RequestParams } from './types';
 
 export interface CoverageResponse {
@@ -16,15 +18,24 @@ export interface CoverageResponse {
 export class WcsManager {
   private readonly wcsUrl: string;
 
-  public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger, @inject(SERVICES.CONFIG) private readonly config: IConfig) {
+  public constructor(
+    @inject(SERVICES.LOGGER) private readonly logger: Logger,
+    @inject(SERVICES.CONFIG) private readonly config: IConfig,
+    @inject(CATALOG_SYMBOL) private readonly catalog: ICatalog
+  ) {
     this.wcsUrl = config.get('wcs.url');
   }
   public async getCoverage(reqParams: RequestParams): Promise<CoverageResponse> {
     const { coverageId, ...params } = reqParams;
+    const a = await this.catalog.getCoverageId([0,0,0,0], 'avi')
+    return this.getCoverageFromWCS({ coverageId: 'avi__bad-quality_cog', ...params });
+  }
+
+  private async getCoverageFromWCS(reqParams: RequestParams): Promise<CoverageResponse> {
     try {
       const response = await Axios.get<NodeJS.ReadStream>(this.wcsUrl, {
         responseType: 'stream',
-        params: { coverageId, ...params },
+        params: reqParams,
         paramsSerializer: (params) => qs.stringify(params, { indices: false }),
         validateStatus: null,
       });
@@ -32,8 +43,9 @@ export class WcsManager {
     } catch (error) {
       const axiosError = error as AxiosError<NodeJS.ReadStream>;
       if (axiosError.request !== undefined) {
-        throw new Error('no response received from the upstream');
+        throw new UpstreamUnavailableError('no response received from the upstream');
       } else {
+        this.logger.error(axiosError.message);
         throw new Error('request failed to dispatch');
       }
     }

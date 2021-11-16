@@ -13,7 +13,7 @@ export const requestParamsSchema: JSONSchemaType<RequestParams> = {
   properties: {
     request: { const: 'GetCoverage', type: 'string' },
     version: { const: '2.0.1', type: 'string' },
-    coverageId: { type: 'string' },
+    coverageId: { type: 'string',  },
     service: { const: 'WCS', type: 'string' },
     subset: {
       type: 'array',
