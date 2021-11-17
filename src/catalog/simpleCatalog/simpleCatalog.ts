@@ -1,21 +1,42 @@
 import { BBox } from 'geojson';
 import { injectable } from 'tsyringe';
+import { SearchTypes } from '../../wcs/models/types';
 import { ICatalog } from '../catalog';
-import { CswClient } from '../csw';
+import { CswClient, CswRecord } from '../csw';
+
+const getLatestRecord = (records: CswRecord[]): CswRecord => {
+  const res = records[0].resolution;
+  let recordToReturnIndex = 0;
+  for (let i = 1; i < records.length; i++) {
+    if (records[i].resolution !== res) {
+      break;
+    }
+    if (records[i].date.localeCompare(records[recordToReturnIndex].date) > 0) {
+      recordToReturnIndex = i;
+    }
+  }
+  return records[recordToReturnIndex];
+};
 
 @injectable()
 export class SimpleCatalog implements ICatalog {
   public constructor(private readonly cswClient: CswClient) {}
 
-  public async getCoverageId(bbox: BBox, searchType: string): Promise<string> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  public async getCoverageId(bbox: BBox, searchType: SearchTypes): Promise<string> {
     try {
-      const res = await this.cswClient.getRecords('http://raster-qa-catalog-raster-catalog-pycsw-route-raster.apps.v0h0bdx6.eastus.aroapp.io/',[-90,-90,90,90],'ASC', 'mc:minHorizontalAccuracyCE90', 1, 5)
-      return res;      
+      const res = await this.cswClient.getRecords(
+        bbox,
+        searchType === SearchTypes.MAX_RES ? 'DESC' : 'ASC',
+        'mc:maxResolutionMeter',
+        1
+      );
+      if (res.records.length === 0) {
+        throw new Error('No matching record was found');
+      }
+      return getLatestRecord(res.records).productName;
     } catch (error) {
       console.log(error);
+      throw error;
     }
-    
-    return 'avi__bad-quality_cog';
   }
 }

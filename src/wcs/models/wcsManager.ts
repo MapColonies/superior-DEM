@@ -6,7 +6,8 @@ import { SERVICES } from '../../common/constants';
 import { IConfig } from '../../common/interfaces';
 import { UpstreamUnavailableError } from '../../common/errors';
 import { CATALOG_SYMBOL, ICatalog } from '../../catalog/catalog';
-import { RequestParams } from './types';
+import { subsetToBBox } from '../../common/util';
+import { RequestParams, SearchTypes } from './types';
 
 export interface CoverageResponse {
   stream: NodeJS.ReadStream;
@@ -25,17 +26,19 @@ export class WcsManager {
   ) {
     this.wcsUrl = config.get('wcs.url');
   }
-  public async getCoverage(reqParams: RequestParams): Promise<CoverageResponse> {
-    const { coverageId, ...params } = reqParams;
-    const a = await this.catalog.getCoverageId([0,0,0,0], 'avi')
-    return this.getCoverageFromWCS({ coverageId: 'avi__bad-quality_cog', ...params });
+  public async getCoverage(params: Omit<RequestParams, 'coverageId'>, searchType:SearchTypes): Promise<CoverageResponse> {
+    const bbox = subsetToBBox(params.subset)
+    const a = await this.catalog.getCoverageId(bbox, searchType)
+    console.log(a);
+    
+    return this.getCoverageFromWCS({ ...params, coverageId: 'dem__mideast_cog' });
   }
 
-  private async getCoverageFromWCS(reqParams: RequestParams): Promise<CoverageResponse> {
+  private async getCoverageFromWCS(params: Omit<RequestParams,'coverageId'> & {coverageId: string}): Promise<CoverageResponse> {
     try {
       const response = await Axios.get<NodeJS.ReadStream>(this.wcsUrl, {
         responseType: 'stream',
-        params: reqParams,
+        params: params,
         paramsSerializer: (params) => qs.stringify(params, { indices: false }),
         validateStatus: null,
       });
@@ -46,7 +49,7 @@ export class WcsManager {
         throw new UpstreamUnavailableError('no response received from the upstream');
       } else {
         this.logger.error(axiosError.message);
-        throw new Error('request failed to dispatch');
+        throw new Error('wcs request failed to dispatch');
       }
     }
   }

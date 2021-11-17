@@ -8,6 +8,9 @@
   "wcs" : {
     "url": "http://localhost:8080/geoserver/wcs"
   },
+  "csw": {
+    "url": "http://localhost:8080/csw"
+  },
   "server": {
     "port": "8080",
     "request": {

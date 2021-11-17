@@ -11,6 +11,7 @@ export const getXmlErrorHandlerMiddleware: () => ErrorRequestHandler = () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     next: NextFunction
   ): void => {
+    res.err = err;
     const responseStatusCode = err.statusCode ?? err.status ?? StatusCodes.INTERNAL_SERVER_ERROR;
     res.setHeader('Content-Type', 'application/xml');
     res.status(responseStatusCode)
