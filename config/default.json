@@ -5,7 +5,7 @@
       "prettyPrint": false
     }
   },
-  "wcs" : {
+  "wcs": {
     "url": "http://localhost:8080/geoserver/wcs"
   },
   "csw": {

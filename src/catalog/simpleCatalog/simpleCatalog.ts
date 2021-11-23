@@ -23,20 +23,10 @@ export class SimpleCatalog implements ICatalog {
   public constructor(private readonly cswClient: CswClient) {}
 
   public async getCoverageId(bbox: BBox, searchType: SearchTypes): Promise<string> {
-    try {
-      const res = await this.cswClient.getRecords(
-        bbox,
-        searchType === SearchTypes.MAX_RES ? 'DESC' : 'ASC',
-        'mc:maxResolutionMeter',
-        1
-      );
-      if (res.records.length === 0) {
-        throw new Error('No matching record was found');
-      }
-      return getLatestRecord(res.records).productName;
-    } catch (error) {
-      console.log(error);
-      throw error;
+    const res = await this.cswClient.getRecords(bbox, searchType === SearchTypes.MAX_RES ? 'DESC' : 'ASC', 'mc:maxResolutionMeter', 1);
+    if (res.records.length === 0) {
+      throw new Error('No matching record was found');
     }
+    return getLatestRecord(res.records).productName;
   }
 }

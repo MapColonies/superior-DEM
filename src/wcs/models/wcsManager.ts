@@ -26,15 +26,15 @@ export class WcsManager {
   ) {
     this.wcsUrl = config.get('wcs.url');
   }
-  public async getCoverage(params: Omit<RequestParams, 'coverageId'>, searchType:SearchTypes): Promise<CoverageResponse> {
-    const bbox = subsetToBBox(params.subset)
-    const a = await this.catalog.getCoverageId(bbox, searchType)
+  public async getCoverage(params: Omit<RequestParams, 'coverageId'>, searchType: SearchTypes): Promise<CoverageResponse> {
+    const bbox = subsetToBBox(params.subset);
+    const a = await this.catalog.getCoverageId(bbox, searchType);
     console.log(a);
-    
+
     return this.getCoverageFromWCS({ ...params, coverageId: 'dem__mideast_cog' });
   }
 
-  private async getCoverageFromWCS(params: Omit<RequestParams,'coverageId'> & {coverageId: string}): Promise<CoverageResponse> {
+  private async getCoverageFromWCS(params: Omit<RequestParams, 'coverageId'> & { coverageId: string }): Promise<CoverageResponse> {
     try {
       const response = await Axios.get<NodeJS.ReadStream>(this.wcsUrl, {
         responseType: 'stream',

@@ -1,9 +1,9 @@
 import { BBox } from 'geojson';
-import Axios, {AxiosError} from 'axios';
+import Axios, { AxiosError } from 'axios';
 import { inject, injectable } from 'tsyringe';
 
 import { getTraversalObj, convertToJson } from 'fast-xml-parser';
-import { Logger } from 'pino';
+import { Logger } from '@map-colonies/js-logger';
 import he from 'he';
 import { owsBoundingBoxToBbox } from '../common/util';
 import { IConfig } from '../common/interfaces';
@@ -11,8 +11,8 @@ import { SERVICES } from '../common/constants';
 import { UpstreamUnavailableError } from '../common/errors';
 
 const options = {
-  attributeNamePrefix: '',
-  attrNodeName: 'attr', //default is 'false'
+  // attributeNamePrefix: '',
+  attrNodeName: 'attr',
   textNodeName: '#text',
   ignoreAttributes: false,
   ignoreNameSpace: false,
@@ -20,18 +20,16 @@ const options = {
   parseNodeValue: true,
   parseAttributeValue: false,
   trimValues: true,
-  cdataTagName: '__cdata', //default is 'false'
+  cdataTagName: '__cdata',
   cdataPositionChar: '\\c',
   parseTrueNumberOnly: false,
   numParseOptions: {
     hex: true,
     leadingZeros: true,
-    //skipLike: /\+[0-9]{10}/
   },
-  arrayMode: false, //"strict"
-  attrValueProcessor: (val: string): string => he.decode(val, { isAttributeValue: true }), //default is a=>a
-  tagValueProcessor: (val: string): string => he.decode(val), //default is a=>a
-  stopNodes: ['parse-me-as-string'],
+  arrayMode: (name: string): boolean => name === 'mc:MCRasterRecord',
+  attrValueProcessor: (val: string): string => he.decode(val, { isAttributeValue: true }),
+  tagValueProcessor: (val: string): string => he.decode(val),
   alwaysCreateTextNode: false,
 };
 
@@ -46,6 +44,37 @@ const NAMESPACES = {
 const namespaceString = Object.entries(NAMESPACES)
   .map(([key, value]) => `xmlns:${key}="${value}"`)
   .join(' ');
+
+const generateCswBody = (
+  bbox: BBox,
+  sortOrder: 'DESC' | 'ASC',
+  sortColumn: string,
+  startPosition: number,
+  maxRecords?: number
+): string => `<csw:GetRecords xmlns="http://www.opengis.net/cat/csw/2.0.2" ${namespaceString} service="CSW" version="2.0.2" resultType="results" outputSchema="http://schema.mapcolonies.com/raster" startPosition="${startPosition}" ${
+  maxRecords !== undefined ? `maxRecords="${maxRecords}"` : ''
+}>
+<csw:Query typeNames="csw:Record">
+  <csw:ElementSetName>full</csw:ElementSetName>
+  <csw:Constraint version="2.0.2">
+    <ogc:Filter>
+        <ogc:Within>
+          <ogc:PropertyName>ows:BoundingBox</ogc:PropertyName>
+          <gml:Envelope>
+            <gml:lowerCorner>${bbox[1]} ${bbox[0]}</gml:lowerCorner>
+            <gml:upperCorner>${bbox[3]} ${bbox[2]}</gml:upperCorner>
+          </gml:Envelope>
+        </ogc:Within>
+    </ogc:Filter>
+  </csw:Constraint>
+          <ogc:SortBy>
+          <ogc:SortProperty>
+              <ogc:PropertyName>${sortColumn}</ogc:PropertyName>
+              <ogc:SortOrder>${sortOrder}</ogc:SortOrder>
+          </ogc:SortProperty>
+      </ogc:SortBy>
+</csw:Query>
+</csw:GetRecords>`;
 
 export interface CswRecord {
   productName: string;
@@ -63,7 +92,7 @@ export interface CSWResponse {
 @injectable()
 export class CswClient {
   private readonly cswUrl: string;
-  public constructor(@inject(SERVICES.CONFIG) private readonly config: IConfig, @inject(SERVICES.LOGGER) private readonly logger: Logger,) {
+  public constructor(@inject(SERVICES.CONFIG) private readonly config: IConfig, @inject(SERVICES.LOGGER) private readonly logger: Logger) {
     this.cswUrl = this.config.get('csw.url');
   }
 
@@ -74,61 +103,44 @@ export class CswClient {
     startPosition: number,
     maxRecords?: number
   ): Promise<CSWResponse> {
-    const body = `<csw:GetRecords xmlns="http://www.opengis.net/cat/csw/2.0.2" ${namespaceString} service="CSW" version="2.0.2" resultType="results" outputSchema="http://schema.mapcolonies.com/raster" startPosition="${startPosition}" ${
-      maxRecords !== undefined ? `maxRecords="${maxRecords}"` : ''
-    }>
-    <csw:Query typeNames="csw:Record">
-      <csw:ElementSetName>full</csw:ElementSetName>
-      <csw:Constraint version="2.0.2">
-        <ogc:Filter>
-            <ogc:Within>
-              <ogc:PropertyName>ows:BoundingBox</ogc:PropertyName>
-              <gml:Envelope>
-                <gml:lowerCorner>${bbox[1]} ${bbox[0]}</gml:lowerCorner>
-                <gml:upperCorner>${bbox[3]} ${bbox[2]}</gml:upperCorner>
-              </gml:Envelope>
-            </ogc:Within>
-        </ogc:Filter>
-      </csw:Constraint>
-              <ogc:SortBy>
-              <ogc:SortProperty>
-                  <ogc:PropertyName>${sortColumn}</ogc:PropertyName>
-                  <ogc:SortOrder>${sortOrder}</ogc:SortOrder>
-              </ogc:SortProperty>
-          </ogc:SortBy>
-    </csw:Query>
-  </csw:GetRecords>`;
+    const body = generateCswBody(bbox, sortOrder, sortColumn, startPosition, maxRecords);
     try {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       const res = await Axios.post(this.cswUrl, body, { headers: { 'Content-Type': 'text/xml' } });
       /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
-      const tObj = getTraversalObj(res.data as string, options);
-      const jsonObj = convertToJson(tObj, options);
+      const traversalObj = getTraversalObj(res.data as string, options);
+      const jsonObj = convertToJson(traversalObj, options);
       const result = jsonObj['csw:GetRecordsResponse']['csw:SearchResults'];
+      const records =
+        result['mc:MCRasterRecord'] === undefined
+          ? []
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          : result['mc:MCRasterRecord'].map((record: any) => ({
+              productName: record['mc:productName'],
+              resolution: record['mc:maxResolutionMeter'],
+              date: record['mc:creationDateUTC'],
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+              bbox: owsBoundingBoxToBbox({
+                lowerCorner: record['ows:BoundingBox']['ows:LowerCorner'],
+                upperCorner: record['ows:BoundingBox']['ows:UpperCorner'],
+              }),
+            }));
       return {
         nextRecord: result['attr']['nextRecord'],
         recordsMatched: result['attr']['numberOfRecordsMatched'],
         recordsReturned: result['attr']['numberOfRecordsReturned'],
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        records: result['mc:MCRasterRecord'].map((record: any) => ({
-          productName: record['mc:productName'],
-          resolution: record['mc:maxResolutionMeter'],
-          date: record['mc:creationDateUTC'],
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          bbox: owsBoundingBoxToBbox({lowerCorner:record['ows:BoundingBox']['ows:LowerCorner'], upperCorner:record['ows:BoundingBox']['ows:UpperCorner']}),
-        })),
+        records,
       };
       /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
     } catch (err) {
       const error = err as AxiosError;
       if (error.response) {
-        this.logger.error('request to csw failed', {headers: error.response.headers, status: error.response.status, });
-        throw Error('request to the catalog has failed')
+        this.logger.error('request to csw failed', { headers: error.response.headers, status: error.response.status });
+        throw Error('request to the catalog has failed');
       } else if (error.request !== undefined) {
-        throw new UpstreamUnavailableError('catalog did not respond')
-      } else {
-        throw err;
+        throw new UpstreamUnavailableError('catalog did not respond');
       }
+      throw err;
     }
   }
 }

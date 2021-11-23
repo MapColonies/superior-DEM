@@ -1,6 +1,6 @@
 apiVersion: v2
-name: ts-server-boilerplate
-description: A Helm chart for ts-server-boilerplate service
+name: superior-dem
+description: A Helm chart for superior-dem service
 type: application
 version: 1.0.0
 appVersion: 1.0.0

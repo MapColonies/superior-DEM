@@ -1,4 +1,4 @@
-import {BBox} from 'geojson';
+import { BBox } from 'geojson';
 import { SearchTypes } from '../wcs/models/types';
 
 export interface ICatalog {

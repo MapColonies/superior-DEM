@@ -26,6 +26,8 @@ env:
   logPrettyPrintEnabled: false
   responseCompressionEnabled: true
   requestPayloadLimit: 1mb
+  wcsUrl: http://localhost:8080/wcs
+  cswUrl: http://localhost:8080/csw
   tracing:
     enabled: false
     url: http://localhost:55681/v1/trace

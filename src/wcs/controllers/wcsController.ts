@@ -16,17 +16,16 @@ type GetHandler = RequestHandler<unknown, string | ArrayBuffer[]>;
 @injectable()
 export class WcsController {
   private readonly paramsValidator: ValidateFunction<RequestParams>;
-  private readonly ajv: Ajv;
   public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger, @inject(WcsManager) private readonly manager: WcsManager) {
-    this.ajv = new Ajv();
-    this.paramsValidator = this.ajv.compile(requestParamsSchema);
+    const ajv = new Ajv();
+    this.paramsValidator = ajv.compile(requestParamsSchema);
   }
 
   public getCoverage: GetHandler = async (req, res, next) => {
     const query = req.query;
 
     if (!this.paramsValidator(query)) {
-      this.logger.warn(this.paramsValidator.errors as object);
+      this.logger.warn('request validation failed', this.paramsValidator.errors);
       const msg =
         this.paramsValidator.errors === undefined || this.paramsValidator.errors === null
           ? 'Invalid request'
@@ -35,7 +34,7 @@ export class WcsController {
       (error as HttpError).status = StatusCodes.BAD_REQUEST;
       return next(error);
     }
-    
+
     const { coverageId, ...params } = query;
     try {
       const coverage = await this.manager.getCoverage(params, coverageId);

@@ -32,7 +32,7 @@ export const registerExternalValues = (options?: RegisterOptions): DependencyCon
     { token: SERVICES.LOGGER, provider: { useValue: logger } },
     { token: SERVICES.TRACER, provider: { useValue: tracer } },
     { token: SERVICES.METER, provider: { useValue: meter } },
-    { token: CATALOG_SYMBOL, provider: { useClass: SimpleCatalog }},
+    { token: CATALOG_SYMBOL, provider: { useClass: SimpleCatalog } },
     { token: WCS_ROUTER_SYMBOL, provider: { useFactory: wcsRouterFactory } },
     {
       token: 'onSignal',
