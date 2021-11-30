@@ -4,6 +4,9 @@ const subsetRegex = /.+\((.+),(.+)\)/;
 
 export function subsetToBBox(subset: [string, string]): BBox {
   const orderedSubset = subset[0].startsWith('Long') ? [subset[1], subset[0]] : subset;
+  if (!orderedSubset[0].startsWith('Lat') || !orderedSubset[1].startsWith('Long')) {
+    throw new Error('Subset must include lat and long');
+  }
   const latMatch = orderedSubset[0].match(subsetRegex);
   const longMatch = orderedSubset[1].match(subsetRegex);
   if (latMatch === null || longMatch === null) {

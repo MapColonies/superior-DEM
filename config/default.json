@@ -11,6 +11,9 @@
   "csw": {
     "url": "http://localhost:8080/csw"
   },
+  "httpClient": {
+    "timeout": 1000
+  },
   "server": {
     "port": "8080",
     "request": {

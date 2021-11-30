@@ -11,7 +11,7 @@ const getLatestRecord = (records: CswRecord[]): CswRecord => {
     if (records[i].resolution !== res) {
       break;
     }
-    if (records[i].date.localeCompare(records[recordToReturnIndex].date) > 0) {
+    if (records[i].imagingEndDate.localeCompare(records[recordToReturnIndex].imagingEndDate) > 0) {
       recordToReturnIndex = i;
     }
   }
@@ -23,10 +23,10 @@ export class SimpleCatalog implements ICatalog {
   public constructor(private readonly cswClient: CswClient) {}
 
   public async getCoverageId(bbox: BBox, searchType: SearchTypes): Promise<string> {
-    const res = await this.cswClient.getRecords(bbox, searchType === SearchTypes.MAX_RES ? 'DESC' : 'ASC', 'mc:maxResolutionMeter', 1);
+    const res = await this.cswClient.getRecords(bbox, searchType === SearchTypes.MAX_RES ? 'DESC' : 'ASC', 'mc:resolutionMeter', 1);
     if (res.records.length === 0) {
       throw new Error('No matching record was found');
     }
-    return getLatestRecord(res.records).productName;
+    return getLatestRecord(res.records).coverageId;
   }
 }

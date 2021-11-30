@@ -4,6 +4,7 @@ import { trace } from '@opentelemetry/api';
 import { DependencyContainer } from 'tsyringe/dist/typings/types';
 import jsLogger, { LoggerOptions } from '@map-colonies/js-logger';
 import { Metrics } from '@map-colonies/telemetry';
+import axios from 'axios';
 import { SERVICES, SERVICE_NAME } from './common/constants';
 import { tracing } from './common/tracing';
 import { wcsRouterFactory, WCS_ROUTER_SYMBOL } from './wcs/routes/wcsRouter';
@@ -26,12 +27,14 @@ export const registerExternalValues = (options?: RegisterOptions): DependencyCon
 
   tracing.start();
   const tracer = trace.getTracer(SERVICE_NAME);
+  const axiosClient = axios.create({ timeout: config.get('httpClient.timeout') });
 
   const dependencies: InjectionObject<unknown>[] = [
     { token: SERVICES.CONFIG, provider: { useValue: config } },
     { token: SERVICES.LOGGER, provider: { useValue: logger } },
     { token: SERVICES.TRACER, provider: { useValue: tracer } },
     { token: SERVICES.METER, provider: { useValue: meter } },
+    { token: SERVICES.HTTP_CLIENT, provider: { useValue: axiosClient } },
     { token: CATALOG_SYMBOL, provider: { useClass: SimpleCatalog } },
     { token: WCS_ROUTER_SYMBOL, provider: { useFactory: wcsRouterFactory } },
     {

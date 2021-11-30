@@ -1,1 +1,11 @@
-{}
+{
+  "wcs": {
+    "url": "http://localhost:8080/wcs"
+  },
+  "csw": {
+    "url": "http://localhost:8080/csw"
+  },
+  "httpClient": {
+    "timeout": 250
+  }
+}
