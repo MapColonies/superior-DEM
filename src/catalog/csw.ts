@@ -58,6 +58,11 @@ const generateCswBody = (
   <csw:ElementSetName>full</csw:ElementSetName>
   <csw:Constraint version="2.0.2">
     <ogc:Filter>
+      <ogc:And>
+        <ogc:PropertyIsEqualTo>
+          <ogc:PropertyName>mc:productType</ogc:PropertyName>
+          <ogc:Literal>DTM</ogc:Literal>
+        </ogc:PropertyIsEqualTo>
         <ogc:Contains>
           <ogc:PropertyName>ows:BoundingBox</ogc:PropertyName>
           <gml:Envelope>
@@ -65,6 +70,7 @@ const generateCswBody = (
             <gml:upperCorner>${bbox[3]} ${bbox[2]}</gml:upperCorner>
           </gml:Envelope>
         </ogc:Contains>
+      </ogc:And>
     </ogc:Filter>
   </csw:Constraint>
           <ogc:SortBy>
@@ -139,6 +145,7 @@ export class CswClient {
       /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
     } catch (err) {
       const error = err as AxiosError;
+      this.logger.debug(error.toJSON());
       if (error.response) {
         this.logger.error('request to csw failed', { headers: error.response.headers, status: error.response.status });
         throw new Error('request to the catalog has failed');

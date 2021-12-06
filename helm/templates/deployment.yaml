@@ -30,6 +30,8 @@ spec:
         run: {{ $releaseName }}-{{ $chartName }}
         {{- include "superior-dem.selectorLabels" . | nindent 8 }}
     spec:
+      imagePullSecrets:
+      - name: {{ .Values.global.pullSecretName }}
       containers:
         - name: {{ $releaseName }}-{{ $chartName }}-deployment
           {{- with .Values.image }}

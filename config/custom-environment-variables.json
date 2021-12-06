@@ -20,6 +20,7 @@
       "interval": "TELEMETRY_METRICS_INTERVAL"
     }
   },
+  "httpClient": { "timeout": "HTTP_CLIENT_TIMEOUT" },
   "wcs": { "url": "WCS_URL" },
   "csw": { "url": "CSW_URL" },
   "server": {

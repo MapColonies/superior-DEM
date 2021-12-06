@@ -45,6 +45,7 @@ export class WcsManager {
       return { stream: response.data, contentType: response.headers['content-type'], code: response.status };
     } catch (error) {
       const axiosError = error as AxiosError<NodeJS.ReadStream>;
+      this.logger.debug(axiosError.toJSON());
       if (axiosError.request !== undefined) {
         throw new UpstreamUnavailableError('no response received from the upstream');
       } else {
