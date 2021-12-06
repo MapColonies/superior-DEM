@@ -3,7 +3,7 @@ import { AxiosError, AxiosInstance } from 'axios';
 import { IConfig } from '../../../src/common/interfaces';
 import { SearchTypes } from '../../../src/wcs/models/types';
 import { WcsManager } from '../../../src/wcs/models/wcsManager';
-import { UpstreamUnavailableError } from '../../../dist/common/errors';
+import { UpstreamUnavailableError } from '../../../src/common/errors';
 
 let wcsManager: WcsManager;
 let getCoverageIdMock: jest.Mock;
