@@ -118,7 +118,7 @@ export class CswClient {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       const res = await this.httpClient.post(this.cswUrl, body, { headers: { 'Content-Type': 'text/xml' } });
       /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
-      
+
       const traversalObj = getTraversalObj(res.data as string, options);
       const jsonObj = convertToJson(traversalObj, options);
       const result = jsonObj['csw:GetRecordsResponse']['csw:SearchResults'];

@@ -70,9 +70,7 @@ describe('SimpleCatalog', () => {
         records: [],
       });
 
-      await expect(simpleCatalog.getCoverageId([0, 0, 0, 0], SearchTypes.MAX_RES)).rejects.toThrow(
-        new Error('No matching record was found')
-      );
+      await expect(simpleCatalog.getCoverageId([0, 0, 0, 0], SearchTypes.MAX_RES)).rejects.toThrow(new Error('No matching record was found'));
     });
   });
 });

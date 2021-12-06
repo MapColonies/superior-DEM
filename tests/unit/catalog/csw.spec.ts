@@ -1,5 +1,5 @@
 import jsLogger from '@map-colonies/js-logger';
-import { AxiosInstance } from 'axios';
+import { AxiosError, AxiosInstance } from 'axios';
 import { CswClient, CSWResponse } from '../../../src/catalog/csw';
 import { UpstreamUnavailableError } from '../../../src/common/errors';
 import { IConfig } from '../../../src/common/interfaces';
@@ -80,7 +80,7 @@ describe('CswClient', () => {
     });
 
     it('should return and error with csw failed when the csw response is an error', async () => {
-      httpPostMock.mockRejectedValue({ response: {}, request: {} });
+      httpPostMock.mockRejectedValue({ response: {}, request: {}, toJSON: jest.fn() });
 
       await expect(cswClient.getRecords([0, 0, 0, 0], 'DESC', 'imagingTimeEndUTC', 0, 10)).rejects.toThrow(
         new Error('request to the catalog has failed')
@@ -88,7 +88,7 @@ describe('CswClient', () => {
     });
 
     it('should return and error with csw failed when the csw does not respond', async () => {
-      httpPostMock.mockRejectedValue({ request: {} });
+      httpPostMock.mockRejectedValue({ request: {}, toJSON: jest.fn() });
 
       await expect(cswClient.getRecords([0, 0, 0, 0], 'DESC', 'imagingTimeEndUTC', 0, 10)).rejects.toThrow(
         new UpstreamUnavailableError('catalog did not respond')
@@ -96,9 +96,11 @@ describe('CswClient', () => {
     });
 
     it('should rethrow any error that doesnt contain request or response object', async () => {
-      httpPostMock.mockRejectedValue(new Error('error'));
+      const err = new Error('test') as AxiosError;
+      err.toJSON = jest.fn();
+      httpPostMock.mockRejectedValue(err);
 
-      await expect(cswClient.getRecords([0, 0, 0, 0], 'DESC', 'imagingTimeEndUTC', 0, 10)).rejects.toThrow(new Error('error'));
+      await expect(cswClient.getRecords([0, 0, 0, 0], 'DESC', 'imagingTimeEndUTC', 0, 10)).rejects.toThrow(new Error('test'));
     });
   });
 });

@@ -23,7 +23,7 @@ export class WcsManager {
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
     @inject(SERVICES.CONFIG) config: IConfig,
     @inject(CATALOG_SYMBOL) private readonly catalog: ICatalog,
-    @inject(SERVICES.HTTP_CLIENT) private readonly httpClient: AxiosInstance,
+    @inject(SERVICES.HTTP_CLIENT) private readonly httpClient: AxiosInstance
   ) {
     this.wcsUrl = config.get('wcs.url');
   }

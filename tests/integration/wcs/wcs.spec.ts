@@ -145,7 +145,7 @@ describe('wcs', function () {
       });
 
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-      expect(response.text).toContain("subset: type must be array");
+      expect(response.text).toContain('subset: type must be array');
       expect(response.headers).toHaveProperty('content-type', 'application/xml; charset=utf-8');
     });
 
@@ -159,7 +159,7 @@ describe('wcs', function () {
       });
 
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-      expect(response.text).toContain("subset: contains must contain at least 1 valid item(s)");
+      expect(response.text).toContain('subset: contains must contain at least 1 valid item(s)');
       expect(response.headers).toHaveProperty('content-type', 'application/xml; charset=utf-8');
     });
   });
@@ -167,7 +167,7 @@ describe('wcs', function () {
     it('should return 503 if the catalog is not available', async function () {
       const scope = nock('http://localhost:8080')
         .post(/.*csw.*/)
-        .replyWithError({code: 'ETIMEDOUT'})
+        .replyWithError({ code: 'ETIMEDOUT' });
 
       const response = await requestSender.getCoverage({
         service: 'WCS',
@@ -185,7 +185,7 @@ describe('wcs', function () {
     it('should return an error if the catalog response is empty', async function () {
       const scope = nock('http://localhost:8080')
         .post(/.*csw.*/)
-        .reply(200, emptyResponse, {'Content-Type': 'application/xml'});
+        .reply(200, emptyResponse, { 'Content-Type': 'application/xml' });
 
       const response = await requestSender.getCoverage({
         service: 'WCS',
@@ -201,7 +201,7 @@ describe('wcs', function () {
       scope.done();
     });
 
-    it('should return an error if the catalog returns an error' , async function () {
+    it('should return an error if the catalog returns an error', async function () {
       const scope = nock('http://localhost:8080')
         .post(/.*csw.*/)
         .reply(500, {});
@@ -218,14 +218,14 @@ describe('wcs', function () {
       expect(response.headers).toHaveProperty('content-type', 'application/xml; charset=utf-8');
 
       scope.done();
-    })
+    });
 
     it('should return 503 if the wcs service is not available', async function () {
       const scope = nock('http://localhost:8080')
         .post(/.*csw.*/)
-        .reply(200, multipleRecordsResponse, {'Content-Type': 'application/xml'})
+        .reply(200, multipleRecordsResponse, { 'Content-Type': 'application/xml' })
         .get(/.*wcs.*/)
-        .replyWithError({code: 'ETIMEDOUT'});
+        .replyWithError({ code: 'ETIMEDOUT' });
 
       const response = await requestSender.getCoverage({
         service: 'WCS',

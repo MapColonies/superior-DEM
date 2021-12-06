@@ -7,6 +7,6 @@ export class WcsRequestSender {
   public async getCoverage(query: any): Promise<supertest.Response> {
     const queryString = qs.stringify(query, { indices: false });
 
-    return supertest.agent(this.app).get(`/wcs?${queryString}`)
+    return supertest.agent(this.app).get(`/wcs?${queryString}`);
   }
 }

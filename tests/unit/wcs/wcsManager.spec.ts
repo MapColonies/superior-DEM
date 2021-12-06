@@ -1,5 +1,5 @@
 import jsLogger from '@map-colonies/js-logger';
-import { AxiosInstance } from 'axios';
+import { AxiosError, AxiosInstance } from 'axios';
 import { IConfig } from '../../../src/common/interfaces';
 import { SearchTypes } from '../../../src/wcs/models/types';
 import { WcsManager } from '../../../src/wcs/models/wcsManager';
@@ -37,7 +37,9 @@ describe('WcsManager', () => {
     });
 
     it('should throw the error thrown by the catalog if an it throws an error', async function () {
-      getCoverageIdMock.mockRejectedValue(new Error('test'));
+      const err = new Error('test') as AxiosError;
+      err.toJSON = jest.fn();
+      getCoverageIdMock.mockRejectedValue(err);
 
       await expect(
         wcsManager.getCoverage(
@@ -49,7 +51,7 @@ describe('WcsManager', () => {
 
     it('should throw an Upstream unavailable error if the error contains request', async function () {
       getCoverageIdMock.mockResolvedValue('avi');
-      httpGetMock.mockRejectedValue({ request: {} });
+      httpGetMock.mockRejectedValue({ request: {}, toJSON: jest.fn() });
 
       await expect(
         wcsManager.getCoverage(
@@ -61,7 +63,7 @@ describe('WcsManager', () => {
 
     it('should throw an error if the request failed before sending', async function () {
       getCoverageIdMock.mockResolvedValue('avi');
-      httpGetMock.mockRejectedValue({});
+      httpGetMock.mockRejectedValue({ toJSON: jest.fn() });
 
       await expect(
         wcsManager.getCoverage(
