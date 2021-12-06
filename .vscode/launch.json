@@ -19,7 +19,7 @@
       "program": "${workspaceFolder}/src/index.ts",
       "env": {
         "NODE_ENV": "development",
-        "SERVER_PORT": "8080",
+        "SERVER_PORT": "8081",
         "RESPONSE_COMPRESSION_ENABLED": "true",
         "REQUEST_PAYLOAD_LIMIT": "1mb",
         "LOG_PRETTY_PRINT_ENABLED": "true",
@@ -27,7 +27,6 @@
         "TELEMETRY_METRICS_ENABLED": "false",
         "TELEMETRY_TRACING_URL": "http://localhost:55681/v1/trace",
         "TELEMETRY_METRICS_URL": "http://localhost:55681/v1/metrics"
-        // "OPENAPI_FILE_PATH": "./openapi3.yaml"
       }
     }
   ]

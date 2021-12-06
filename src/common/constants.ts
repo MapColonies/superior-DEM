@@ -12,5 +12,6 @@ export const SERVICES: Record<string, symbol> = {
   CONFIG: Symbol('Config'),
   TRACER: Symbol('Tracer'),
   METER: Symbol('Meter'),
+  HTTP_CLIENT: Symbol('HttpClient'),
 };
 /* eslint-enable @typescript-eslint/naming-convention */

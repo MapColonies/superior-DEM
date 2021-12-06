@@ -1,7 +1,4 @@
 {
-  "openapiConfig": {
-    "filePath": "OPENAPI_FILE_PATH"
-  },
   "telemetry": {
     "serviceName": "TELEMETRY_SERVICE_NAME",
     "hostname": "TELEMETRY_HOST_NAME",
@@ -23,19 +20,14 @@
       "interval": "TELEMETRY_METRICS_INTERVAL"
     }
   },
+  "httpClient": { "timeout": "HTTP_CLIENT_TIMEOUT" },
+  "wcs": { "url": "WCS_URL" },
+  "csw": { "url": "CSW_URL" },
   "server": {
     "port": "SERVER_PORT",
     "request": {
       "payload": {
         "limit": "REQUEST_PAYLOAD_LIMIT"
-      }
-    },
-    "response": {
-      "compression": {
-        "enabled": {
-          "__name": "RESPONSE_COMPRESSION_ENABLED",
-          "__format": "boolean"
-        }
       }
     }
   }

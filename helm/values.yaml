@@ -3,6 +3,7 @@ global:
   tracing: {}
   metrics: {}
   environment: {}
+  pullSecretName: avi
 
 enabled: true
 environment: development
@@ -15,8 +16,8 @@ cloudProvider:
   flavor: openshift
 
 image:
-  repository: ts-server-boilerplate
-  tag: 'latest'
+  repository: superior-dem
+  # tag: 'latest'
 
 env:
   port: 8080
@@ -24,8 +25,9 @@ env:
   protocol: TCP
   logLevel: info
   logPrettyPrintEnabled: false
-  responseCompressionEnabled: true
   requestPayloadLimit: 1mb
+  wcsUrl: http://localhost:8080/wcs
+  cswUrl: http://localhost:8080/csw
   tracing:
     enabled: false
     url: http://localhost:55681/v1/trace

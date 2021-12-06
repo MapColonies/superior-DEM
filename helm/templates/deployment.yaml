@@ -1,8 +1,8 @@
 {{- $releaseName := .Release.Name -}}
-{{- $chartName := include "ts-server-boilerplate.name" . -}}
-{{- $cloudProviderFlavor := include "ts-server-boilerplate.cloudProviderFlavor" . -}}
-{{- $cloudProviderDockerRegistryUrl := include "ts-server-boilerplate.cloudProviderDockerRegistryUrl" . -}}
-{{- $imageTag := include "ts-server-boilerplate.tag" . -}}
+{{- $chartName := include "superior-dem.name" . -}}
+{{- $cloudProviderFlavor := include "superior-dem.cloudProviderFlavor" . -}}
+{{- $cloudProviderDockerRegistryUrl := include "superior-dem.cloudProviderDockerRegistryUrl" . -}}
+{{- $imageTag := include "superior-dem.tag" . -}}
 {{- if .Values.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -11,9 +11,9 @@ metadata:
   labels:
     app: {{ $chartName }}
     component: {{ $chartName }}
-    environment: {{ include "ts-server-boilerplate.environment" . }}
+    environment: {{ include "superior-dem.environment" . }}
     release: {{ $releaseName }}
-    {{- include "ts-server-boilerplate.labels" . | nindent 4 }}
+    {{- include "superior-dem.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -21,15 +21,17 @@ spec:
       app: {{ $chartName }}
       release: {{ $releaseName }}
       run: {{ $releaseName }}-{{ $chartName }}
-      {{- include "ts-server-boilerplate.selectorLabels" . | nindent 6 }}
+      {{- include "superior-dem.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
         app: {{ $chartName }}
         release: {{ $releaseName }}
         run: {{ $releaseName }}-{{ $chartName }}
-        {{- include "ts-server-boilerplate.selectorLabels" . | nindent 8 }}
+        {{- include "superior-dem.selectorLabels" . | nindent 8 }}
     spec:
+      imagePullSecrets:
+      - name: {{ .Values.global.pullSecretName }}
       containers:
         - name: {{ $releaseName }}-{{ $chartName }}-deployment
           {{- with .Values.image }}
